@@ -13,14 +13,26 @@ util.setConfig(CONFIG);
 /**
 * Given a text code, it will return the associated value from the config data.
  * Text codes can be: "account.login.hello": "Hello world" -> translated to CONFIG.data.account.login.hello OR the default value, OR the given code.
+ * NOTE: the transform function can also parse variables. Eg:
+ * const data = {
+ *  "account.name": "John $name:$value"
+ * }
+ * transform('account.name', {name: 'Doe', value: 'Trinitos'})    => John Doe:Trinitos
+ *
 * */
 function transform(code, _default) {
   if(typeof code !== 'string' || !code) {
     return '?';
   }
   let text = util.innerKey(CONFIG.data, code),
-    defaultText = (typeof _default === 'undefined' ? code : _default);
+    defaultText = (typeof _default === 'string' ? _default : code),
+    vars = (typeof _default === 'object' && _default ? _default : {});
   if(text == null) return defaultText;
+  Object.keys(vars).forEach((varName) => {
+    let varValue = vars[varName],
+      regExp = new RegExp("\\$" + varName, "g");
+    text = text.replace(regExp, varValue);
+  });
   return text;
 }
 export function t() {
