@@ -55,6 +55,7 @@ plugin.compile = function compile() {
   }
   let languageFiles = [];
   SOURCE_FILES.forEach((item) => {
+    if(item.trim() === '') return;
     item = path.normalize(item);
     let ext = path.extname(item);
     if (ext === '.js' || ext === '.json') {
@@ -77,7 +78,7 @@ plugin.compile = function compile() {
     }
   });
   if (languageFiles.length === 0) {
-    console.debug(`tri18n: no source language files present.`);
+    console.warn(`tri18n: no source language files present.`);
     return;
   }
   languageFiles.forEach((item) => {
