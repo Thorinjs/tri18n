@@ -9,13 +9,15 @@ const fs = require('fs'),
   path = require('path');
 const BASE_PATH = path.dirname(module.parent.filename);
 let SOURCE_FILES = [],
+  writeFn = null,
+  extension = ".json",
   shouldWatch = !(process.argv.indexOf('--watch') === -1 && process.argv.indexOf('-w') === -1),
   TARGET_PATH = path.normalize(BASE_PATH + '/public/lang'); // by default, it is public/lang/{code}.json
 const plugin = {};
 /*
  * Sets the language source files.
  * */
-plugin.source = function setSoruce(sourcePath) {
+plugin.source = function setSource(sourcePath) {
   SOURCE_FILES.push(sourcePath);
   return plugin;
 };
@@ -28,7 +30,15 @@ plugin.watch = function setWatch(v) {
     shouldWatch = v;
   }
   return plugin;
-}
+};
+
+/*
+* Manually set the extension of the file.
+* */
+plugin.extension = function setExtension(ext) {
+  extension = ext;
+  return plugin;
+};
 
 /*
  * Sets the target location
@@ -37,6 +47,14 @@ plugin.target = function setTarget(targetPath) {
   TARGET_PATH = (path.isAbsolute(targetPath) ? path.normalize(targetPath) : path.normalize(__dirname + '/' + targetPath));
   return plugin;
 };
+
+/*
+* Sets the convert function that will convert the content of the file.
+* */
+plugin.write = function setConvert(fn) {
+  if(typeof fn === 'function') writeFn = fn;
+  return plugin;
+}
 
 /*
  * Compiles the language packages. If not called within the first 100ms, it will auto-compile.
@@ -129,8 +147,13 @@ plugin.convert = function convert(sourceFile) {
 function writeOutput(file, langObj) {
   let targetFile = path.basename(file),
     languageCode = targetFile.substr(0, targetFile.lastIndexOf(path.extname(targetFile))),
-    targetFilePath = path.normalize(TARGET_PATH + '/' + languageCode + ".json");
-  let content = (typeof langObj === 'string' ? langObj : JSON.stringify(langObj));
+    targetFilePath = path.normalize(TARGET_PATH + '/' + languageCode + extension);
+  let content;
+  if(typeof writeFn === 'function') {
+    content = writeFn(langObj);
+  } else {
+    content = (typeof langObj === 'string' ? langObj : JSON.stringify(langObj));
+  }
   try {
     fs.writeFileSync(targetFilePath, content, {encoding: 'utf8'});
     console.log(`tri18n: compiled ${languageCode}.json`);

@@ -11,6 +11,15 @@ let CONFIG = {
 util.setConfig(CONFIG);
 
 /**
+ * Globalize the transformation function
+ * */
+export function globalize(_name) {
+  if(typeof _name !== 'string' || !_name) _name = "_t";
+  global[_name] = transform;
+  return this;
+}
+
+/**
 * Given a text code, it will return the associated value from the config data.
  * Text codes can be: "account.login.hello": "Hello world" -> translated to CONFIG.data.account.login.hello OR the default value, OR the given code.
  * NOTE: the transform function can also parse variables. Eg:
@@ -35,6 +44,7 @@ function transform(code, _default) {
   });
   return text;
 }
+
 export function t() {
   return transform.apply(this, arguments);
 }
