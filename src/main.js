@@ -5,7 +5,8 @@ let CONFIG = {
   url: window.location.protocol + '//' + window.location.host + '/lang', // the URL from where to download language packages. The URL is as follows: {url}/{languageCode}.json
                                                                         // Setting the url to false will result in not downloading any language and just looking into the pack variable.
   data: null, // if set, we will not use the url to download any language, but will use this as the language object.
-  cache: false       // should we try and cache the language object? If we do, onLoad will automatically callback if we have a cached version, and re-cache it after download.
+  cache: false,       // should we try and cache the language object? If we do, onLoad will automatically callback if we have a cached version, and re-cache it after download.
+  raw: false // if set to true, the raw URL will be used, with no .json at the end.
 };
 
 util.setConfig(CONFIG);

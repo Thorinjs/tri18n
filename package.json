@@ -1,13 +1,13 @@
 {
   "name": "tri18n",
   "author": "Stiudeo",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "scripts": {
     "build": "babel src --out-dir lib",
     "dev": "babel src --out-dir lib --watch"
   },
   "dependencies": {
-    "fs-extra": "^0.30.0"
+    "fs-extra": "0.30.0"
   },
   "devDependencies": {
     "babel-cli": "^6.7.5",

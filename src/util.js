@@ -16,6 +16,13 @@ export function downloadLanguage(url, cb) {
     } catch(e) {
       return cb(new Error("Could not parse language pack."));
     }
+    if(typeof CONFIG.parse === 'function') {
+      try {
+        jsonObj = CONFIG.parse(jsonObj);
+      } catch(e) {
+        return cb(e);
+      }
+    }
     return cb(null, jsonObj);
   });
 }
@@ -35,6 +42,10 @@ export function download(done) {
 export function getLanguageUrl(code) {
   if(!CONFIG.url) return false;
   let url = CONFIG.url;
+  if (CONFIG.raw) {
+    url += code;
+    return url;
+  }
   if(url.charAt(url.length-1) !== '/') url += '/';
   url += code + '.json';
   return url;
