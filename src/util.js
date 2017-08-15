@@ -46,8 +46,10 @@ export function getLanguageUrl(code) {
     url += code;
     return url;
   }
-  if(url.charAt(url.length-1) !== '/') url += '/';
-  url += code + '.json';
+  if (typeof CONFIG.parse !== 'function') {
+    if(url.charAt(url.length-1) !== '/') url += '/';
+    url += code + '.json';
+  }
   return url;
 }
 
