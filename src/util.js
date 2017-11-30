@@ -3,6 +3,7 @@
  * Created by Adrian on 24-Jun-16.
  */
 let CONFIG = null;
+const dot = require('dot-object');
 const LANGUAGE_CACHE_KEY = '__tri18n_lang_c';
 export function setConfig(c) {
   CONFIG = c;
@@ -111,6 +112,7 @@ export function innerKey(obj, key) {
 export function flattenData(dataObj) {
   let copyObj = JSON.parse(JSON.stringify(dataObj));
   copyObj = deepen(copyObj);
+  copyObj = dot.dot(copyObj);
   return copyObj;
 }
 

@@ -1,12 +1,13 @@
 {
   "name": "tri18n",
   "author": "UNLOQ Systems",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "scripts": {
     "build": "babel src --out-dir lib",
     "dev": "babel src --out-dir lib --watch"
   },
   "dependencies": {
+    "dot-object": "^1.7.0",
     "fs-extra": "0.30.0"
   },
   "devDependencies": {
