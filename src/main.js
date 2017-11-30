@@ -3,8 +3,9 @@ const util = require('./util.js');
 let CONFIG = {
   lang: 'en',   // the default language
   url: window.location.protocol + '//' + window.location.host + '/lang', // the URL from where to download language packages. The URL is as follows: {url}/{languageCode}.json
-                                                                        // Setting the url to false will result in not downloading any language and just looking into the pack variable.
+  // Setting the url to false will result in not downloading any language and just looking into the pack variable.
   data: null, // if set, we will not use the url to download any language, but will use this as the language object.
+  debug: false, // Set to true in development, to enable warnings.
   cache: false,       // should we try and cache the language object? If we do, onLoad will automatically callback if we have a cached version, and re-cache it after download.
   raw: false // if set to true, the raw URL will be used, with no .json at the end.
 };
@@ -15,13 +16,13 @@ util.setConfig(CONFIG);
  * Globalize the transformation function
  * */
 export function globalize(_name) {
-  if(typeof _name !== 'string' || !_name) _name = "_t";
+  if (typeof _name !== 'string' || !_name) _name = "_t";
   global[_name] = transform;
   return this;
 }
 
 /**
-* Given a text code, it will return the associated value from the config data.
+ * Given a text code, it will return the associated value from the config data.
  * Text codes can be: "account.login.hello": "Hello world" -> translated to CONFIG.data.account.login.hello OR the default value, OR the given code.
  * NOTE: the transform function can also parse variables. Eg:
  * const data = {
@@ -29,15 +30,20 @@ export function globalize(_name) {
  * }
  * transform('account.name', {name: 'Doe', value: 'Trinitos'})    => John Doe:Trinitos
  *
-* */
+ * */
 function transform(code, _default) {
-  if(typeof code !== 'string' || !code) {
+  if (typeof code !== 'string' || !code) {
     return '?';
   }
   let text = util.innerKey(CONFIG.data, code),
     defaultText = (typeof _default === 'string' ? _default : code),
     vars = (typeof _default === 'object' && _default ? _default : {});
-  if(text == null) return defaultText;
+  if (text == null) {
+    if (CONFIG.debug) {
+      console.debug(`Code: ${code} has no translation`);
+    }
+    return defaultText;
+  }
   Object.keys(vars).forEach((varName) => {
     let varValue = vars[varName],
       regExp = new RegExp("\\$" + varName, "g");
@@ -49,35 +55,36 @@ function transform(code, _default) {
 export function t() {
   return transform.apply(this, arguments);
 }
+
 export default function tr() {
   return transform.apply(this, arguments);
 }
 
 
 /**
-* Wraps the transform function by prepending a namespace.
+ * Wraps the transform function by prepending a namespace.
  * This can be used as follows:
  * const t = tri18n.namespace('account')
  *
  * t('login.hello') => equivalent with tri18n.t('account.login.hello')
-* */
+ * */
 export function tns(nsCode) {
-  if(typeof nsCode !== 'string' || !nsCode) {
+  if (typeof nsCode !== 'string' || !nsCode) {
     console.warn(`tri18n: namespace() requires a string.`);
     return t;
   }
   return function namespacedTransform(code) {
-    if(nsCode.charAt(nsCode.length-1) === '.') nsCode = nsCode.substr(0, nsCode.length-1);
+    if (nsCode.charAt(nsCode.length - 1) === '.') nsCode = nsCode.substr(0, nsCode.length - 1);
     return t(nsCode + '.' + code);
   }
 }
 
 
 /**
-* Overrides the default configuration of the plugin.
-* */
+ * Overrides the default configuration of the plugin.
+ * */
 export function configure(opt) {
-  if(typeof opt.data === 'object' && opt.data) {
+  if (typeof opt.data === 'object' && opt.data) {
     CONFIG.data = util.flattenData(opt.data);
     delete opt.data;
   }
@@ -87,36 +94,36 @@ export function configure(opt) {
 }
 
 /**
-* Manually set the cache.
-* */
+ * Manually set the cache.
+ * */
 export function cache(bVal) {
-  if(typeof bVal === 'boolean') {
+  if (typeof bVal === 'boolean') {
     CONFIG.cache = bVal;
   }
   return this;
 }
 
 /**
-* Sets the language data of tri18n
-* */
+ * Sets the language data of tri18n
+ * */
 export function data(dataObj) {
-  if(typeof dataObj === 'object' && dataObj) {
+  if (typeof dataObj === 'object' && dataObj) {
     CONFIG.data = util.flattenData(dataObj);
   }
   return this;
 }
 
 /**
-* Loads the language pack from the remote source.
+ * Loads the language pack from the remote source.
  * TODO: asynchronously load language packs from a given URL
-* */
+ * */
 export function load(onDone) {
-  if(typeof CONFIG.data === 'object' && CONFIG.data) return onDone && onDone();
+  if (typeof CONFIG.data === 'object' && CONFIG.data) return onDone && onDone();
   // Check if we have anything in cache.
-  if(CONFIG.cache) {
+  if (CONFIG.cache) {
     let oldLang = util.loadCachedLanguage(CONFIG.lang);
     // IF we have a previous cached language pack, we done here and re-set the cache.
-    if(oldLang) {
+    if (oldLang) {
       data(oldLang);
       onDone && onDone();
       util.resetCache(CONFIG.lang);
@@ -124,16 +131,16 @@ export function load(onDone) {
     }
   }
   // If no caching and no URL, we stop.
-  if(!CONFIG.url) {
+  if (!CONFIG.url) {
     console.warn(`tri18n: no language data set and nothing to download. Starting with no language support.`);
     return onDone && onDone();
   }
   // Otherwise, we download the lang pack.
   util.download((e, langObj) => {
-    if(e) return onDone && onDone(e);
+    if (e) return onDone && onDone(e);
     // at this point, we have the lang pack. We check if we can cache it.
     data(langObj);
-    if(CONFIG.cache) {
+    if (CONFIG.cache) {
       util.cacheLanguage(CONFIG.lang, CONFIG.data);
     }
     onDone && onDone();
@@ -145,11 +152,11 @@ export function getLanguageUrl(code) {
 }
 
 /**
-* Sets the location of the language package.
+ * Sets the location of the language package.
  * TODO: asynchronously load language pack
-* */
+ * */
 export function setLanguage(langCode, done) {
-  if(typeof langCode === 'string' && langCode) {
+  if (typeof langCode === 'string' && langCode) {
     CONFIG.lang = langCode;
   }
   return this;
