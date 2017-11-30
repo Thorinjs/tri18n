@@ -1,7 +1,7 @@
 {
   "name": "tri18n",
   "author": "UNLOQ Systems",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "scripts": {
     "build": "babel src --out-dir lib",
     "dev": "babel src --out-dir lib --watch"

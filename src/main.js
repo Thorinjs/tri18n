@@ -9,9 +9,14 @@ let CONFIG = {
   cache: false,       // should we try and cache the language object? If we do, onLoad will automatically callback if we have a cached version, and re-cache it after download.
   raw: false // if set to true, the raw URL will be used, with no .json at the end.
 };
-
+let MISSING_TRANSLATIONS = {};
 util.setConfig(CONFIG);
-
+/**
+ * Returns an array of missing translations
+ * */
+export function getMissingTranslations() {
+  return Object.keys(MISSING_TRANSLATIONS);
+}
 /**
  * Globalize the transformation function
  * */
@@ -39,8 +44,11 @@ function transform(code, _default) {
     defaultText = (typeof _default === 'string' ? _default : code),
     vars = (typeof _default === 'object' && _default ? _default : {});
   if (text == null) {
-    if (CONFIG.debug) {
-      console.debug(`Code: ${code} has no translation`);
+    if(!MISSING_TRANSLATIONS[code]) {
+      if (CONFIG.debug) {
+        console.debug(`Code: ${code} has no translation`);
+      }
+      MISSING_TRANSLATIONS[code] = true;
     }
     return defaultText;
   }
