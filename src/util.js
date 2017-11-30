@@ -5,22 +5,24 @@
 let CONFIG = null;
 const dot = require('dot-object');
 const LANGUAGE_CACHE_KEY = '__tri18n_lang_c';
+
 export function setConfig(c) {
   CONFIG = c;
 }
+
 export function downloadLanguage(url, cb) {
   doGet(url, (err, content) => {
-    if(err) return cb(err);
+    if (err) return cb(err);
     let jsonObj;
     try {
       jsonObj = JSON.parse(content);
-    } catch(e) {
+    } catch (e) {
       return cb(new Error("Could not parse language pack."));
     }
-    if(typeof CONFIG.parse === 'function') {
+    if (typeof CONFIG.parse === 'function') {
       try {
         jsonObj = CONFIG.parse(jsonObj);
-      } catch(e) {
+      } catch (e) {
         return cb(e);
       }
     }
@@ -41,14 +43,14 @@ export function download(done) {
  * Returns the JSON path of the given language code.
  * */
 export function getLanguageUrl(code) {
-  if(!CONFIG.url) return false;
+  if (!CONFIG.url) return false;
   let url = CONFIG.url;
   if (CONFIG.raw) {
     url += code;
     return url;
   }
   if (typeof CONFIG.parse !== 'function') {
-    if(url.charAt(url.length-1) !== '/') url += '/';
+    if (url.charAt(url.length - 1) !== '/') url += '/';
     url += code + '.json';
   }
   return url;
@@ -60,13 +62,13 @@ export function getLanguageUrl(code) {
 export function cacheLanguage(langCode, langObj) {
   try {
     localStorage.setItem(LANGUAGE_CACHE_KEY + ':' + langCode, JSON.stringify(langObj));
-  } catch(e) {
+  } catch (e) {
   }
 }
 
 export function resetCache(langCode) {
   download((e, langObj) => {
-    if(e) return;
+    if (e) return;
     cacheLanguage(langCode, langObj);
   });
 }
@@ -77,9 +79,9 @@ export function resetCache(langCode) {
 export function loadCachedLanguage(langCode) {
   try {
     let tmpObj = localStorage.getItem(LANGUAGE_CACHE_KEY + ':' + langCode);
-    if(!tmpObj || tmpObj === '') throw 1;
+    if (!tmpObj || tmpObj === '') throw 1;
     return flattenData(JSON.parse(tmpObj));
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 }
@@ -92,7 +94,7 @@ export function innerKey(obj, key) {
     return obj[key];
   }
   let t = typeof obj[key];
-  if(t === 'string' || t === 'number' || t === 'boolean') return obj[key];
+  if (t === 'string' || t === 'number' || t === 'boolean') return obj[key];
   var s = key.split('.');
   var tmp = obj;
   try {
@@ -112,7 +114,10 @@ export function innerKey(obj, key) {
 export function flattenData(dataObj) {
   let copyObj = JSON.parse(JSON.stringify(dataObj));
   copyObj = deepen(copyObj);
-  copyObj = dot.dot(copyObj);
+  try {
+    copyObj = dot.dot(copyObj);
+  } catch (e) {
+  }
   return copyObj;
 }
 
@@ -136,7 +141,7 @@ function doGet(url, fn) {
   x.open('GET', url, true);
   x.onreadystatechange = function () {
     if (x.readyState == 4) {
-      if(x.status >= 200 && x.status <= 399) {
+      if (x.status >= 200 && x.status <= 399) {
         return fn(null, x.responseText);
       }
       fn(new Error("Could not download language."));
